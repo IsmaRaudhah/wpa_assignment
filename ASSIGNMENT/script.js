@@ -1,3 +1,4 @@
+// Get DOM elements
 const weightInput = document.getElementById('weight');
 const heightInput = document.getElementById('height');
 const calculateBtn = document.getElementById('calculate-bmi');
@@ -10,8 +11,15 @@ const scaleContainer = document.getElementById('scale-container');
 function calculateBMI() {
     const weight = parseFloat(weightInput.value);
     const height = parseFloat(heightInput.value) / 100; // Convert cm to meters
-    const bmi = weight / (height * height);
 
+    if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+        bmiResult.textContent = 'Please enter valid positive numbers for both weight and height.';
+        bmiWarning.textContent = '';
+        scaleContainer.innerHTML = '';
+        return;
+    }
+
+    const bmi = weight / (height * height);
     bmiResult.textContent = `Your BMI is: ${bmi.toFixed(2)}`;
 
     // Determine BMI category
@@ -59,23 +67,47 @@ function updateBmiScale(bmiCategory) {
         { bmi: Infinity, color: "maroon", label: "Over 40", category: "Obesity Class III" }
     ];
 
-    // Create scale bars
+    const ul = document.createElement('ul');
+    ul.style.listStyleType = 'disc'; // Set bullet points style
+    ul.style.paddingLeft = '20px';
+
+    for (let i = 0; i < scaleData.length; i++) {
+        const li = document.createElement('li');
+        li.style.marginBottom = '10px'; // Add space between items
+        li.textContent = `${scaleData[i].label}: ${scaleData[i].category}`;
+        li.style.color = scaleData[i].color;
+
+        if (scaleData[i].category === bmiCategory) {
+            li.style.fontWeight = 'bold';
+            li.style.borderLeft = '5px solid black'; // Highlight with a border
+            li.style.paddingLeft = '10px';
+        }
+
+        ul.appendChild(li);
+    }
+
+    scaleContainer.appendChild(ul); // Add the list to the scale container
+}
+
+    // Create scale bars with tooltips
     for (let i = 0; i < scaleData.length; i++) {
         const bar = document.createElement('div');
         bar.style.backgroundColor = scaleData[i].color;
-        bar.style.width = '15px';
-        bar.style.height = '20px';
+        bar.style.width = '30px';
+        bar.style.height = '30px';
         bar.style.margin = '5px';
         bar.style.display = 'inline-block';
-
+        bar.style.borderRadius = '5px';
+        bar.setAttribute('title', `${scaleData[i].label}: ${scaleData[i].category}`); // Tooltip
+        
         // Highlight the category based on the calculated BMI
         if (scaleData[i].category === bmiCategory) {
-            bar.style.border = '2px solid black';
+            bar.style.border = '3px solid black';
         }
 
         scaleContainer.appendChild(bar);
     }
-}
+
 
 // Event listener for calculate button
 calculateBtn.addEventListener('click', (event) => {
@@ -86,6 +118,5 @@ calculateBtn.addEventListener('click', (event) => {
 // Event listener for clear button
 clearBtn.addEventListener('click', clearBMI);
 
-aosScript.onload = () => {
-    AOS.init();
-};
+// Initialize AOS animations (if applicable)
+AOS.init();
